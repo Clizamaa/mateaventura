@@ -1,7 +1,16 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
-  }
+    },
+    "checkJs": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "jsx": "preserve",
+    "allowJs": true
+  },
+  "include": ["**/*.js", "**/*.jsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
