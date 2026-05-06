@@ -6,6 +6,7 @@ const COLORS = ['#3B82F6', '#8B5CF6', '#FBBF24', '#10B981', '#F87171', '#06B6D4'
 const SHAPES = ['●', '★', '◆', '▲', '■']
 
 function Particle({ x, delay, color, shape }) {
+
   return (
     <motion.div
       style={{ position: 'fixed', left: `${x}%`, top: '-20px', color, fontSize: Math.random() * 14 + 10, zIndex: 9999, pointerEvents: 'none' }}
