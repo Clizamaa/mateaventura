@@ -70,13 +70,14 @@ export default function ProfilePage() {
     }
   }
 
-  const handleChangeAvatar = async (avatarEmoji) => {
+  const handleChangeAvatar = async (avatarId, avatarEmoji) => {
     setSaving(true)
     try {
-      await api.put(`/api/users/${user.id}`, { nombre: user.name })
+      await api.put(`/api/users/${user.id}/avatar`, { avatarId })
+      await update({ ...session.user, avatarId, avatarEmoji })
       setShowAvatarPicker(false)
     } catch (err) {
-      console.error(err)
+      console.error('Error updating avatar:', err)
     } finally {
       setSaving(false)
     }
@@ -176,7 +177,7 @@ export default function ProfilePage() {
                   {AVATARS.map(avatar => (
                     <button
                       key={avatar.id}
-                      onClick={() => handleChangeAvatar(avatar.emoji)}
+                      onClick={() => handleChangeAvatar(avatar.id, avatar.emoji)}
                       className={`text-2xl p-1.5 rounded-xl transition-all ${user.avatarEmoji === avatar.emoji ? 'bg-purple-200 scale-110' : 'hover:bg-purple-100'}`}
                       title={avatar.name}
                     >

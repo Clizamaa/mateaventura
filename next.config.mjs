@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['mariadb', '@prisma/adapter-mariadb']
+  serverExternalPackages: ['@prisma/client']
 };
 
 export default nextConfig;

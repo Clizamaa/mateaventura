@@ -47,7 +47,7 @@ export default function DashboardPage() {
 
   const quickActions = [
     { label: 'Practicar', emoji: '📚', desc: 'Ejercicios a tu ritmo', gradient: 'bg-gradient-brand', href: '/practice' },
-    { label: 'Desafíos', emoji: '⚡', desc: 'Modos especiales', gradient: 'bg-gradient-to-br from-purple-500 to-pink-500', href: '/practice' },
+    { label: 'Generador IA', emoji: '✨', desc: 'Crea con Claude', gradient: 'bg-gradient-to-br from-indigo-500 to-purple-600', href: '/generator' },
     { label: 'Mis Logros', emoji: '🏆', desc: 'Medallas ganadas', gradient: 'bg-gradient-green', href: '/achievements' },
     { label: 'Ranking', emoji: '📊', desc: 'Top aventureros', gradient: 'bg-gradient-warm', href: '/achievements' },
   ]

@@ -38,7 +38,9 @@ export default function LandingPage() {
       setTimeout(() => setMascotMood('thinking'), 2000)
     } else {
       setMascotMood('celebrating')
-      setTimeout(() => router.push('/dashboard'), 800)
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 800)
     }
   }
 

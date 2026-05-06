@@ -24,6 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { username, password } = parsed.data
 
+        console.log('Authorize called with username:', username)
         const user = await prisma.user.findUnique({
           where: { username: username.toLowerCase() },
           select: {
@@ -43,10 +44,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         })
 
-        if (!user || !user.activo) return null
+        if (!user) {
+          console.log('User not found in DB')
+          return null
+        }
+        if (!user.activo) {
+          console.log('User is inactive')
+          return null
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash)
-        if (!valid) return null
+        if (!valid) {
+          console.log('Invalid password for user')
+          return null
+        }
+
+        console.log('User successfully authorized')
 
         return {
           id: user.id,

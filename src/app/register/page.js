@@ -57,7 +57,9 @@ export default function RegisterPage() {
       })
 
       setStep(3)
-      setTimeout(() => router.push('/dashboard'), 2000)
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 2000)
     } catch (err) {
       setRegisterError(err.message)
     }

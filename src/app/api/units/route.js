@@ -6,9 +6,14 @@ import { prisma } from '@/lib/prisma'
 export const GET = withErrorHandler(async (request) => {
   const { searchParams } = new URL(request.url)
   const bookId = searchParams.get('bookId')
+  const gradeId = searchParams.get('gradeId')
 
   const units = await prisma.unit.findMany({
-    where: { activo: true, ...(bookId && { bookId }) },
+    where: { 
+      activo: true, 
+      ...(bookId && { bookId }),
+      ...(gradeId && { book: { gradeId } })
+    },
     orderBy: [{ bookId: 'asc' }, { orden: 'asc' }],
     include: {
       book: { select: { titulo: true } },

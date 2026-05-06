@@ -35,12 +35,12 @@ export default function PracticePage() {
   const startSession = useGameStore(s => s.startSession)
 
   const [step, setStep] = useState(1)
-  const [selectedBook, setSelectedBook] = useState(null)
+  const [selectedGrade, setSelectedGrade] = useState(null)
   const [selectedUnits, setSelectedUnits] = useState([])
   const [difficulty, setDifficulty] = useState('MEDIO')
   const [mode, setMode] = useState('LIBRE')
 
-  const [books, setBooks] = useState([])
+  const [grades, setGrades] = useState([])
   const [units, setUnits] = useState([])
   const [gameModes, setGameModes] = useState([])
   const [loading, setLoading] = useState(false)
@@ -50,19 +50,17 @@ export default function PracticePage() {
     if (status === 'unauthenticated') router.push('/')
   }, [status, router])
 
-  // Fetch books and game modes on mount
+  // Fetch grades and game modes on mount
   useEffect(() => {
-    api.get('/api/books').then(d => setBooks(d.data ?? [])).catch(console.error)
+    api.get('/api/grades').then(d => setGrades(d ?? [])).catch(console.error)
     api.get('/api/game-modes').then(setGameModes).catch(console.error)
   }, [])
 
-  // Fetch units when book is selected
+  // Fetch units when grade is selected
   useEffect(() => {
-    if (!selectedBook) { setUnits([]); return }
-    api.get(`/api/units?bookId=${selectedBook}`).then(setUnits).catch(console.error)
-  }, [selectedBook])
-
-  const currentBook = books.find(b => b.id === selectedBook)
+    if (!selectedGrade) { setUnits([]); return }
+    api.get(`/api/units?gradeId=${selectedGrade}`).then(d => setUnits(d ?? [])).catch(console.error)
+  }, [selectedGrade])
 
   const toggleUnit = (unitId) => {
     setSelectedUnits(prev =>
@@ -78,7 +76,6 @@ export default function PracticePage() {
       if (!gameMode) throw new Error('Modo de juego no encontrado')
 
       const result = await api.post('/api/sessions/start', {
-        bookId: selectedBook,
         unitIds: selectedUnits,
         dificultad: difficulty,
         gameModeId: gameMode.id,
@@ -98,8 +95,8 @@ export default function PracticePage() {
     }
   }
 
-  const canProceed = { 1: !!selectedBook, 2: true, 3: true, 4: true }
-  const steps = ['Libro', 'Unidades', 'Dificultad', 'Modo']
+  const canProceed = { 1: !!selectedGrade, 2: true, 3: true, 4: true }
+  const steps = ['Curso', 'Contenidos', 'Dificultad', 'Modo']
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -134,54 +131,51 @@ export default function PracticePage() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
-          {/* Paso 1: Selección de libro */}
+          {/* Paso 1: Selección de curso */}
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
               <div className="flex items-center gap-3 mb-6">
-                <MascotOwl mood="thinking" size={70} animate />
+                <MascotOwl mood="happy" size={70} animate />
                 <div>
-                  <h2 className="font-heading text-2xl font-bold text-gray-800">¿Qué quieres practicar?</h2>
-                  <p className="text-gray-500">Elige tu libro de matemáticas</p>
+                  <h2 className="font-heading text-2xl font-bold text-gray-800">¿En qué curso vas?</h2>
+                  <p className="text-gray-500">Selecciona tu nivel para ver los libros disponibles</p>
                 </div>
               </div>
 
-              {books.length === 0 ? (
+              {grades.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  <p className="text-4xl mb-2">📚</p>
-                  <p className="font-semibold">Cargando libros...</p>
+                  <p className="text-4xl mb-2">🎓</p>
+                  <p className="font-semibold">Cargando cursos...</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {books.map((book, i) => {
-                    const color = book.subject?.color ?? '#3B82F6'
-                    const emoji = book.subject?.icono ?? '📘'
+                <div className="grid grid-cols-2 gap-4">
+                  {grades.map((grade, i) => {
+                    const isSelected = selectedGrade === grade.id
                     return (
                       <motion.button
-                        key={book.id}
+                        key={grade.id}
                         custom={i}
                         variants={cardVariants}
                         initial="hidden"
                         animate="visible"
-                        onClick={() => { setSelectedBook(book.id); setSelectedUnits([]) }}
+                        onClick={() => { setSelectedGrade(grade.id); setSelectedUnits([]) }}
                         className={`relative text-left p-5 rounded-3xl border-2 transition-all ${
-                          selectedBook === book.id
-                            ? 'border-purple-400 shadow-lg scale-[1.02]'
-                            : 'border-gray-200 bg-white hover:border-purple-200'
+                          isSelected
+                            ? 'border-blue-400 bg-blue-50 shadow-lg scale-[1.02]'
+                            : 'border-gray-200 bg-white hover:border-blue-200'
                         }`}
-                        style={selectedBook === book.id ? { background: `${color}10`, borderColor: color } : { background: 'white' }}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shadow-md" style={{ background: `${color}20` }}>
-                            {emoji}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                            🎓
                           </div>
                           <div>
-                            <h3 className="font-heading text-xl font-bold text-gray-800">{book.titulo}</h3>
-                            <p className="text-gray-500">{book.grade?.nombre} • {book._count?.units ?? 0} unidades</p>
+                            <h3 className="font-heading text-lg font-bold text-gray-800">{grade.nombre}</h3>
                           </div>
                         </div>
-                        {selectedBook === book.id && (
-                          <div className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: color }}>
-                            <Check size={16} className="text-white" />
+                        {isSelected && (
+                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                            <Check size={14} className="text-white" />
                           </div>
                         )}
                       </motion.button>
@@ -192,11 +186,11 @@ export default function PracticePage() {
             </motion.div>
           )}
 
-          {/* Paso 2: Unidades */}
+          {/* Paso 2: Contenidos */}
           {step === 2 && (
             <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
-              <h2 className="font-heading text-2xl font-bold text-gray-800 mb-1">¿Qué unidades?</h2>
-              <p className="text-gray-500 mb-6">Puedes elegir varias. Si no eliges ninguna, ¡practicamos todo!</p>
+              <h2 className="font-heading text-2xl font-bold text-gray-800 mb-1">¿Qué contenidos?</h2>
+              <p className="text-gray-500 mb-6">Puedes elegir varios. Si no eliges ninguno, ¡practicamos todo el curso!</p>
 
               <div className="grid grid-cols-1 gap-3">
                 {units.map((unit, i) => {
@@ -321,8 +315,8 @@ export default function PracticePage() {
               >
                 <h3 className="font-heading text-lg font-bold text-gray-800 mb-2">Resumen de tu sesión</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><span className="text-gray-500">Libro:</span> <strong>{currentBook?.titulo}</strong></div>
-                  <div><span className="text-gray-500">Unidades:</span> <strong>{selectedUnits.length || 'Todas'}</strong></div>
+                  <div><span className="text-gray-500">Curso:</span> <strong>{grades.find(g => g.id === selectedGrade)?.nombre}</strong></div>
+                  <div><span className="text-gray-500">Contenidos:</span> <strong>{selectedUnits.length || 'Todos'}</strong></div>
                   <div><span className="text-gray-500">Dificultad:</span> <strong>{DIFFICULTIES.find(d => d.id === difficulty)?.label}</strong></div>
                   <div><span className="text-gray-500">Modo:</span> <strong>{MODES.find(m => m.id === mode)?.label}</strong></div>
                 </div>
