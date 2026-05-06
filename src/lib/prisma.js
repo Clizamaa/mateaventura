@@ -20,7 +20,7 @@ const createPrismaClient = () => {
   })
 
   const adapter = new PrismaMariaDb(pool)
-  
+
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
