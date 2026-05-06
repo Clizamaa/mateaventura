@@ -7,7 +7,296 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
+model User {
+  id               String            @id @default(cuid())
+  email            String            @unique
+  username         String            @unique
+  passwordHash     String
+  nombre           String
+  apellido         String?
+  fechaNacimiento  DateTime?
+  gradoActual      String?
+  role             Role              @default(ALUMNO)
+  xp               Int               @default(0)
+  nivel            Int               @default(1)
+  racha            Int               @default(0)
+  avatarId         String?
+  activo           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  progressRecords  ProgressRecord[]
+  scores           Score[]
+  sessions         Session[]
+  userAchievements UserAchievement[]
+  avatar           Avatar?           @relation(fields: [avatarId], references: [id])
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@index([avatarId], map: "users_avatarId_fkey")
+  @@map("users")
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  nombre      String
+  slug        String   @unique
+  descripcion String?
+  icono       String?
+  color       String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  books       Book[]
+  scores      Score[]
+
+  @@map("subjects")
+}
+
+model Grade {
+  id          String   @id @default(cuid())
+  nombre      String
+  nivel       Int
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  books       Book[]
+  scores      Score[]
+
+  @@index([nivel])
+  @@map("grades")
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  titulo      String
+  descripcion String?
+  portadaUrl  String?
+  subjectId   String
+  gradeId     String
+  editorial   String?
+  anio        Int?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  grade       Grade    @relation(fields: [gradeId], references: [id])
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  units       Unit[]
+
+  @@index([subjectId])
+  @@index([gradeId])
+  @@map("books")
+}
+
+model Unit {
+  id              String           @id @default(cuid())
+  bookId          String
+  numero          Int
+  titulo          String
+  descripcion     String?
+  objetivos       Json?
+  orden           Int              @default(0)
+  activo          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  exercises       Exercise[]
+  progressRecords ProgressRecord[]
+  topics          Topic[]
+  book            Book             @relation(fields: [bookId], references: [id])
+
+  @@index([bookId])
+  @@map("units")
+}
+
+model Topic {
+  id          String     @id @default(cuid())
+  unitId      String
+  titulo      String
+  descripcion String?
+  orden       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  exercises   Exercise[]
+  unit        Unit       @relation(fields: [unitId], references: [id])
+
+  @@index([unitId])
+  @@map("topics")
+}
+
+model Exercise {
+  id                     String            @id @default(cuid())
+  unitId                 String
+  topicId                String?
+  enunciado              String            @db.Text
+  tipo                   ExerciseType      @default(OPCION_MULTIPLE)
+  opciones               Json?
+  respuestaCorrecta      Json
+  explicacion            String?           @db.Text
+  pista                  String?           @db.Text
+  dificultad             Dificultad        @default(FACIL)
+  puntajeBase            Int               @default(10)
+  tiempoEstimadoSegundos Int               @default(30)
+  tags                   Json?
+  activo                 Boolean           @default(true)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  topic                  Topic?            @relation(fields: [topicId], references: [id])
+  unit                   Unit              @relation(fields: [unitId], references: [id])
+  sessionExercises       SessionExercise[]
+
+  @@index([unitId])
+  @@index([dificultad])
+  @@index([activo])
+  @@index([topicId], map: "exercises_topicId_fkey")
+  @@map("exercises")
+}
+
+model GameMode {
+  id            String    @id @default(cuid())
+  nombre        String    @unique
+  descripcion   String?
+  configuracion Json
+  activo        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+
+  @@map("game_modes")
+}
+
+model Session {
+  id                     String            @id @default(cuid())
+  userId                 String
+  gameModeId             String
+  unitsSeleccionadas     Json
+  dificultadSeleccionada Dificultad
+  puntajeFinal           Int               @default(0)
+  ejerciciosTotales      Int               @default(0)
+  aciertos               Int               @default(0)
+  errores                Int               @default(0)
+  tiempoTotal            Int               @default(0)
+  mejorRacha             Int               @default(0)
+  pistasUsadas           Int               @default(0)
+  estrellas              Int               @default(0)
+  estado                 SessionEstado     @default(EN_CURSO)
+  iniciadaEn             DateTime          @default(now())
+  finalizadaEn           DateTime?
+  score                  Score?
+  sessionExercises       SessionExercise[]
+  gameMode               GameMode          @relation(fields: [gameModeId], references: [id])
+  user                   User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([estado])
+  @@index([iniciadaEn])
+  @@index([gameModeId], map: "sessions_gameModeId_fkey")
+  @@map("sessions")
+}
+
+model SessionExercise {
+  id                      String    @id @default(cuid())
+  sessionId               String
+  exerciseId              String
+  orden                   Int
+  respuestaUsuario        Json?
+  correcta                Boolean?
+  tiempoRespuestaSegundos Int?
+  usoPista                Boolean   @default(false)
+  puntajeObtenido         Int       @default(0)
+  respondidoEn            DateTime?
+  exercise                Exercise  @relation(fields: [exerciseId], references: [id])
+  session                 Session   @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId])
+  @@index([exerciseId])
+  @@map("session_exercises")
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String   @unique
+  puntaje   Int
+  subjectId String?
+  gradeId   String?
+  unitIds   Json?
+  fecha     DateTime @default(now())
+  grade     Grade?   @relation(fields: [gradeId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id])
+  subject   Subject? @relation(fields: [subjectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([puntaje])
+  @@index([fecha])
+  @@index([gradeId], map: "scores_gradeId_fkey")
+  @@index([subjectId], map: "scores_subjectId_fkey")
+  @@map("scores")
+}
+
+model Achievement {
+  id               String            @id @default(cuid())
+  codigo           String            @unique
+  nombre           String
+  descripcion      String
+  iconoUrl         String?
+  criterios        Json
+  xpRecompensa     Int               @default(20)
+  raridad          Raridad           @default(COMUN)
+  activo           Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  obtenidoEn    DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId], map: "user_achievements_achievementId_fkey")
+  @@map("user_achievements")
+}
+
+model ProgressRecord {
+  id                    String    @id @default(cuid())
+  userId                String
+  unitId                String
+  ejerciciosCompletados Int       @default(0)
+  aciertos              Int       @default(0)
+  dominio               Float     @default(0)
+  ultimaPractica        DateTime?
+  updatedAt             DateTime  @updatedAt
+  unit                  Unit      @relation(fields: [unitId], references: [id])
+  user                  User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, unitId])
+  @@index([userId])
+  @@index([unitId], map: "progress_records_unitId_fkey")
+  @@map("progress_records")
+}
+
+model Avatar {
+  id            String   @id @default(cuid())
+  nombre        String
+  emoji         String
+  imagenUrl     String?
+  categoria     String?
+  desbloqueable Boolean  @default(false)
+  requisitos    Json?
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  users         User[]
+
+  @@map("avatars")
+}
 
 enum Role {
   ALUMNO
@@ -39,305 +328,4 @@ enum Raridad {
   RARO
   EPICO
   LEGENDARIO
-}
-
-// ─── Models ───────────────────────────────────────────────────────────────────
-
-model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  username        String    @unique
-  passwordHash    String
-  nombre          String
-  apellido        String?
-  fechaNacimiento DateTime?
-  gradoActual     String?
-  role            Role      @default(ALUMNO)
-  xp              Int       @default(0)
-  nivel           Int       @default(1)
-  racha           Int       @default(0)
-  avatarId        String?
-  activo          Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  avatar           Avatar?           @relation(fields: [avatarId], references: [id])
-  sessions         Session[]
-  scores           Score[]
-  userAchievements UserAchievement[]
-  progressRecords  ProgressRecord[]
-
-  @@index([email])
-  @@index([username])
-  @@index([role])
-  @@map("users")
-}
-
-model Subject {
-  id          String   @id @default(cuid())
-  nombre      String
-  slug        String   @unique
-  descripcion String?
-  icono       String?
-  color       String?
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  books  Book[]
-  scores Score[]
-
-  @@map("subjects")
-}
-
-model Grade {
-  id          String   @id @default(cuid())
-  nombre      String
-  nivel       Int
-  descripcion String?
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  books  Book[]
-  scores Score[]
-
-  @@index([nivel])
-  @@map("grades")
-}
-
-model Book {
-  id          String   @id @default(cuid())
-  titulo      String
-  descripcion String?
-  portadaUrl  String?
-  subjectId   String
-  gradeId     String
-  editorial   String?
-  anio        Int?
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  subject Subject @relation(fields: [subjectId], references: [id])
-  grade   Grade   @relation(fields: [gradeId], references: [id])
-  units   Unit[]
-
-  @@index([subjectId])
-  @@index([gradeId])
-  @@map("books")
-}
-
-model Unit {
-  id          String   @id @default(cuid())
-  bookId      String
-  numero      Int
-  titulo      String
-  descripcion String?
-  objetivos   Json?
-  orden       Int      @default(0)
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  book            Book             @relation(fields: [bookId], references: [id])
-  topics          Topic[]
-  exercises       Exercise[]
-  progressRecords ProgressRecord[]
-
-  @@index([bookId])
-  @@map("units")
-}
-
-model Topic {
-  id          String   @id @default(cuid())
-  unitId      String
-  titulo      String
-  descripcion String?
-  orden       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  unit      Unit       @relation(fields: [unitId], references: [id])
-  exercises Exercise[]
-
-  @@index([unitId])
-  @@map("topics")
-}
-
-model Exercise {
-  id                     String       @id @default(cuid())
-  unitId                 String
-  topicId                String?
-  enunciado              String       @db.Text
-  tipo                   ExerciseType @default(OPCION_MULTIPLE)
-  opciones               Json?
-  respuestaCorrecta      Json
-  explicacion            String?      @db.Text
-  pista                  String?      @db.Text
-  dificultad             Dificultad   @default(FACIL)
-  puntajeBase            Int          @default(10)
-  tiempoEstimadoSegundos Int          @default(30)
-  tags                   Json?
-  activo                 Boolean      @default(true)
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
-
-  unit             Unit              @relation(fields: [unitId], references: [id])
-  topic            Topic?            @relation(fields: [topicId], references: [id])
-  sessionExercises SessionExercise[]
-
-  @@index([unitId])
-  @@index([dificultad])
-  @@index([activo])
-  @@map("exercises")
-}
-
-model GameMode {
-  id            String   @id @default(cuid())
-  nombre        String   @unique
-  descripcion   String?
-  configuracion Json
-  activo        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  sessions Session[]
-
-  @@map("game_modes")
-}
-
-model Session {
-  id                     String        @id @default(cuid())
-  userId                 String
-  gameModeId             String
-  unitsSeleccionadas     Json
-  dificultadSeleccionada Dificultad
-  puntajeFinal           Int           @default(0)
-  ejerciciosTotales      Int           @default(0)
-  aciertos               Int           @default(0)
-  errores                Int           @default(0)
-  tiempoTotal            Int           @default(0)
-  mejorRacha             Int           @default(0)
-  pistasUsadas           Int           @default(0)
-  estrellas              Int           @default(0)
-  estado                 SessionEstado @default(EN_CURSO)
-  iniciadaEn             DateTime      @default(now())
-  finalizadaEn           DateTime?
-
-  user             User              @relation(fields: [userId], references: [id])
-  gameMode         GameMode          @relation(fields: [gameModeId], references: [id])
-  sessionExercises SessionExercise[]
-  score            Score?
-
-  @@index([userId])
-  @@index([estado])
-  @@index([iniciadaEn])
-  @@map("sessions")
-}
-
-model SessionExercise {
-  id                      String    @id @default(cuid())
-  sessionId               String
-  exerciseId              String
-  orden                   Int
-  respuestaUsuario        Json?
-  correcta                Boolean?
-  tiempoRespuestaSegundos Int?
-  usoPista                Boolean   @default(false)
-  puntajeObtenido         Int       @default(0)
-  respondidoEn            DateTime?
-
-  session  Session  @relation(fields: [sessionId], references: [id])
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
-
-  @@index([sessionId])
-  @@index([exerciseId])
-  @@map("session_exercises")
-}
-
-model Score {
-  id        String   @id @default(cuid())
-  userId    String
-  sessionId String   @unique
-  puntaje   Int
-  subjectId String?
-  gradeId   String?
-  unitIds   Json?
-  fecha     DateTime @default(now())
-
-  user    User     @relation(fields: [userId], references: [id])
-  session Session  @relation(fields: [sessionId], references: [id])
-  subject Subject? @relation(fields: [subjectId], references: [id])
-  grade   Grade?   @relation(fields: [gradeId], references: [id])
-
-  @@index([userId])
-  @@index([puntaje])
-  @@index([fecha])
-  @@map("scores")
-}
-
-model Achievement {
-  id           String   @id @default(cuid())
-  codigo       String   @unique
-  nombre       String
-  descripcion  String
-  iconoUrl     String?
-  criterios    Json
-  xpRecompensa Int      @default(20)
-  raridad      Raridad  @default(COMUN)
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-
-  userAchievements UserAchievement[]
-
-  @@map("achievements")
-}
-
-model UserAchievement {
-  id            String   @id @default(cuid())
-  userId        String
-  achievementId String
-  obtenidoEn    DateTime @default(now())
-
-  user        User        @relation(fields: [userId], references: [id])
-  achievement Achievement @relation(fields: [achievementId], references: [id])
-
-  @@unique([userId, achievementId])
-  @@index([userId])
-  @@map("user_achievements")
-}
-
-model ProgressRecord {
-  id                    String    @id @default(cuid())
-  userId                String
-  unitId                String
-  ejerciciosCompletados Int       @default(0)
-  aciertos              Int       @default(0)
-  dominio               Float     @default(0)
-  ultimaPractica        DateTime?
-  updatedAt             DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-  unit Unit @relation(fields: [unitId], references: [id])
-
-  @@unique([userId, unitId])
-  @@index([userId])
-  @@map("progress_records")
-}
-
-model Avatar {
-  id            String   @id @default(cuid())
-  nombre        String
-  emoji         String
-  imagenUrl     String?
-  categoria     String?
-  desbloqueable Boolean  @default(false)
-  requisitos    Json?
-  activo        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-
-  users User[]
-
-  @@map("avatars")
 }
