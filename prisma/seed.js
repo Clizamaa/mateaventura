@@ -200,11 +200,24 @@ async function main() {
   await prisma.exercise.deleteMany()
 
   const unitsData = [
-    { titulo: 'Sumas y Restas', numero: 1, descripcion: 'Operaciones de suma y resta con números hasta 10.000', objetivos: ['Sumar números de hasta 4 dígitos', 'Restar números con reagrupación'], exercises: EJERCICIOS_SUMAS },
-    { titulo: 'Multiplicación', numero: 2, descripcion: 'Tablas de multiplicar y multiplicación de 2 dígitos', objetivos: ['Dominar las tablas del 1 al 12', 'Multiplicar números de 2 dígitos'], exercises: EJERCICIOS_MULTI },
-    { titulo: 'División', numero: 3, descripcion: 'División exacta y con resto', objetivos: ['Dividir usando las tablas', 'Resolver divisiones de 3 dígitos'], exercises: EJERCICIOS_DIVISION },
-    { titulo: 'Fracciones', numero: 4, descripcion: 'Fracciones simples y operaciones básicas', objetivos: ['Identificar y comparar fracciones', 'Sumar y restar fracciones simples'], exercises: EJERCICIOS_FRACCIONES },
-    { titulo: 'Geometría', numero: 5, descripcion: 'Figuras geométricas, perímetro y área', objetivos: ['Identificar figuras geométricas', 'Calcular perímetro y área'], exercises: EJERCICIOS_GEOMETRIA },
+    // Números y operaciones
+    { titulo: 'OA1 — Números hasta el 1.000.000', numero: 1, descripcion: 'conteo, valor posicional, escritura', objetivos: ['Leer, escribir y representar números hasta el 1.000.000'], exercises: [] },
+    { titulo: 'OA2 — Comparar y ordenar', numero: 2, descripcion: 'comparación, mayor, menor, ordenamiento', objetivos: ['Comparar y ordenar números hasta el 1.000.000'], exercises: [] },
+    { titulo: 'OA3 — Adición y sustracción', numero: 3, descripcion: 'suma, resta, reagrupación, llevada', objetivos: ['Adición y sustracción con reagrupación hasta el 1.000.000'], exercises: EJERCICIOS_SUMAS },
+    { titulo: 'OA4 — Multiplicación', numero: 4, descripcion: 'multiplicación, tablas, conmutatividad, distributiva', objetivos: ['Multiplicación hasta 10×10 y sus propiedades'], exercises: EJERCICIOS_MULTI },
+    { titulo: 'OA5 — División', numero: 5, descripcion: 'división, cociente, resto, dividendo', objetivos: ['División exacta e inexacta con divisores hasta 10'], exercises: EJERCICIOS_DIVISION },
+    { titulo: 'OA6 — Fracciones', numero: 6, descripcion: 'fracciones, numerador, denominador, equivalencia', objetivos: ['Fracciones: representar, comparar y ordenar fracciones simples'], exercises: EJERCICIOS_FRACCIONES },
+    // Geometría
+    { titulo: 'OA7 — Figuras 2D', numero: 7, descripcion: 'triángulo, cuadrado, rectángulo, círculo, polígonos, lados, vértices', objetivos: ['Identificar y clasificar figuras 2D'], exercises: [] },
+    { titulo: 'OA8 — Cuerpos 3D', numero: 8, descripcion: 'cubo, esfera, cilindro, cono, pirámide, caras, aristas', objetivos: ['Identificar cuerpos geométricos 3D'], exercises: [] },
+    { titulo: 'OA9 — Perímetro y área', numero: 9, descripcion: 'perímetro, área, unidades de medida, cm, m', objetivos: ['Calcular perímetro y estimar área'], exercises: EJERCICIOS_GEOMETRIA },
+    // Medición
+    { titulo: 'OA10 — Longitud, masa y capacidad', numero: 10, descripcion: 'metro, kilogramo, litro, estimación, conversión', objetivos: ['Medir longitud, masa y capacidad'], exercises: [] },
+    { titulo: 'OA11 — Tiempo y dinero', numero: 11, descripcion: 'reloj, horas, minutos, pesos chilenos, cambio, vuelto', objetivos: ['Tiempo y dinero'], exercises: [] },
+    // Datos y probabilidades
+    { titulo: 'OA12 — Tablas y gráficos', numero: 12, descripcion: 'tabla de datos, gráfico de barras, frecuencia, categoría', objetivos: ['Tablas y gráficos de barras'], exercises: [] },
+    // Patrones y álgebra
+    { titulo: 'OA13 — Patrones', numero: 13, descripcion: 'secuencia, regla del patrón, serie, término', objetivos: ['Patrones numéricos y geométricos'], exercises: [] },
   ]
 
   let totalExercises = 0
