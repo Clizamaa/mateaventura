@@ -5,7 +5,13 @@
       "Bash(npm show *)",
       "Bash(npx prisma *)",
       "Bash(npm run *)",
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(curl -s http://localhost:3000/api/units?gradeId=1)",
+      "Bash(curl -s \"http://localhost:3000/api/units?gradeId=1\")",
+      "Bash(curl -s \"http://localhost:3000/api/grades\")",
+      "Bash(curl -s \"http://localhost:3000/api/units?gradeId=cmovkmre9000py3anfhz48t2p\")",
+      "Bash(curl *)"
     ]
   }
 }

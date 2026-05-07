@@ -49,7 +49,7 @@ Responde SOLO con este JSON, sin texto adicional:
 }`;
 
     const msg = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022", // Using latest Sonnet model equivalent to requirements
+      model: "claude-sonnet-4-6",
       max_tokens: 1000,
       temperature: 0.7,
       system: "Eres un experto creador de contenido educativo de matemáticas para educación básica.",
@@ -76,9 +76,19 @@ Responde SOLO con este JSON, sin texto adicional:
     return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error('Error generando ejercicio con Claude:', error);
-    return NextResponse.json(
-      { error: 'Error interno al generar el ejercicio' },
-      { status: 500 }
-    );
+    
+    // MOCK FALLBACK: Si falla la API (por saldo o permisos del modelo), devolvemos un ejercicio falso
+    // para que el usuario pueda seguir probando la interfaz sin bloqueos.
+    return NextResponse.json({
+      enunciado: `[MOCK] Ejercicio de prueba para el tema seleccionado. (La API de Claude falló, verifica tu API Key).`,
+      opciones: [
+        `Opción correcta (Mock)`, 
+        "Opción incorrecta 1", 
+        "Opción incorrecta 2", 
+        "Opción incorrecta 3"
+      ],
+      correcta: `Opción correcta (Mock)`,
+      explicacion: `Esta es una explicación de prueba. Aparece porque hubo un problema al conectar con la API de Anthropic (ver consola para detalles).`
+    });
   }
 }

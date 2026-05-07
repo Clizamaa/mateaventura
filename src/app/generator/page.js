@@ -20,9 +20,9 @@ const MODES = [
 
 export default function GeneratorPage() {
   const router = useRouter()
-  const [books, setBooks] = useState([])
+  const [grades, setGrades] = useState([])
   const [units, setUnits] = useState([])
-  const [selectedBook, setSelectedBook] = useState('')
+  const [selectedGrade, setSelectedGrade] = useState('')
   const [selectedUnit, setSelectedUnit] = useState('')
   const [difficulty, setDifficulty] = useState('MEDIO')
   const [mode, setMode] = useState('LIBRE')
@@ -34,13 +34,13 @@ export default function GeneratorPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.get('/api/books').then(d => setBooks(d.data ?? [])).catch(console.error)
+    api.get('/api/grades').then(d => setGrades(Array.isArray(d) ? d : (d?.data || []))).catch(console.error)
   }, [])
 
   useEffect(() => {
-    if (!selectedBook) { setUnits([]); return }
-    api.get(`/api/units?bookId=${selectedBook}`).then(setUnits).catch(console.error)
-  }, [selectedBook])
+    if (!selectedGrade) { setUnits([]); return }
+    api.get(`/api/units?gradeId=${selectedGrade}`).then(d => setUnits(Array.isArray(d) ? d : (d?.data || []))).catch(console.error)
+  }, [selectedGrade])
 
   const handleGenerate = async () => {
     if (!selectedUnit) {
@@ -55,7 +55,7 @@ export default function GeneratorPage() {
     setIsCorrect(null)
 
     try {
-      const unitData = units.find(u => u.id === selectedUnit)
+      const unitData = units.find(u => String(u.id) === selectedUnit)
       const payload = {
         unit: {
           nombre: unitData.titulo,
@@ -113,15 +113,15 @@ export default function GeneratorPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-1">Libro</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">Curso</label>
                 <select 
                   className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-0 transition-colors"
-                  value={selectedBook}
-                  onChange={(e) => { setSelectedBook(e.target.value); setSelectedUnit('') }}
+                  value={selectedGrade}
+                  onChange={(e) => { setSelectedGrade(e.target.value); setSelectedUnit('') }}
                 >
-                  <option value="">Selecciona un libro...</option>
-                  {books.map(b => (
-                    <option key={b.id} value={b.id}>{b.titulo}</option>
+                  <option value="">Selecciona un curso...</option>
+                  {grades.map(g => (
+                    <option key={g.id} value={g.id}>{g.nombre}</option>
                   ))}
                 </select>
               </div>
@@ -132,7 +132,7 @@ export default function GeneratorPage() {
                   className="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-0 transition-colors"
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
-                  disabled={!selectedBook}
+                  disabled={!selectedGrade}
                 >
                   <option value="">Selecciona una unidad...</option>
                   {units.map(u => (
